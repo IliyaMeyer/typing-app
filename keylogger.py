@@ -8,7 +8,12 @@ class Keylogger:
     def __on_press(self, key):
         self.raw_input.append((key, time.time()))
 
+    # todo - massive redundancy here
     def __on_release(self, key):
+        if self.__total_duration is not None and time.time() - self.start_time >= self.__total_duration:
+            return False
+        if self.__duration_after_first_press is not None and time.time() - self.raw_input[0][1] >= self.__duration_after_first_press:
+            return False
         if key == Key.esc:
             self.raw_input.pop()
             return False
@@ -39,8 +44,12 @@ class Keylogger:
         self.raw_input = []
         self.screen_input = []
         self.start_time = 0
+        self.__total_duration = None
+        self.__duration_after_first_press = None
 
-    def run_keylogger(self):
+    def run_keylogger(self, total_duration=None, duration_after_first_press=None):
+        self.__total_duration = total_duration
+        self.__duration_after_first_press = duration_after_first_press
         self.start_time = time.time()
         with Listener(
                 on_press=self.__on_press,
